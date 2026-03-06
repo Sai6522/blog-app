@@ -199,33 +199,18 @@ function App() {
 
   const speakPost = (post) => {
     if (speaking === post.id) {
+      window.speechSynthesis.cancel();
       setSpeaking(null);
       return;
     }
     
+    window.speechSynthesis.cancel();
     const text = `${post.title}. ${post.content}`;
-    const lang = i18n.language;
-    
-    // Use a different TTS service that works with CORS
-    const audio = new Audio(`https://api.voicerss.org/?key=undefined&hl=${lang}&src=${encodeURIComponent(text)}&c=MP3`);
-    
-    audio.onended = () => setSpeaking(null);
-    audio.onerror = () => {
-      // Fallback to browser speech if API fails
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.onend = () => setSpeaking(null);
-      window.speechSynthesis.speak(utterance);
-    };
-    
-    audio.play().catch(() => {
-      // If audio fails, use browser speech
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.onend = () => setSpeaking(null);
-      window.speechSynthesis.speak(utterance);
-    });
-    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = i18n.language;
+    utterance.onend = () => setSpeaking(null);
+    utterance.onerror = () => setSpeaking(null);
+    window.speechSynthesis.speak(utterance);
     setSpeaking(post.id);
   };
 
