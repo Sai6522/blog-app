@@ -213,22 +213,25 @@ function App() {
     
     audio.onended = () => setSpeaking(null);
     audio.onerror = () => {
-      // Fallback to browser speech synthesis
+      // Fallback to browser speech synthesis only on error
+      setSpeaking(null);
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
       utterance.onend = () => setSpeaking(null);
       window.speechSynthesis.speak(utterance);
+      setSpeaking(post.id);
     };
     
-    audio.play().catch(() => {
+    audio.play().then(() => {
+      setSpeaking(post.id);
+    }).catch(() => {
       // If play fails, use browser speech synthesis
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
       utterance.onend = () => setSpeaking(null);
       window.speechSynthesis.speak(utterance);
+      setSpeaking(post.id);
     });
-    
-    setSpeaking(post.id);
   };
 
   return (
