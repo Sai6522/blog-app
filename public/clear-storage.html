@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Blog Storage</title>
+</head>
+<body>
+    <h1>Clear Blog Storage</h1>
+    <button onclick="localStorage.clear(); alert('Storage cleared! Refresh your blog app.');">Clear Storage</button>
+    <script>
+        console.log('Current posts:', localStorage.getItem('posts'));
+    </script>
+</body>
+</html>
