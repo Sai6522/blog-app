@@ -206,32 +206,12 @@ function App() {
     
     window.speechSynthesis.cancel();
     const text = `${post.title}. ${post.content}`;
-    const lang = i18n.language;
-    
-    // Try Google TTS first
-    const audio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(text)}`);
-    
-    audio.onended = () => setSpeaking(null);
-    audio.onerror = () => {
-      // Fallback to browser speech synthesis only on error
-      setSpeaking(null);
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.onend = () => setSpeaking(null);
-      window.speechSynthesis.speak(utterance);
-      setSpeaking(post.id);
-    };
-    
-    audio.play().then(() => {
-      setSpeaking(post.id);
-    }).catch(() => {
-      // If play fails, use browser speech synthesis
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.onend = () => setSpeaking(null);
-      window.speechSynthesis.speak(utterance);
-      setSpeaking(post.id);
-    });
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = i18n.language;
+    utterance.onend = () => setSpeaking(null);
+    utterance.onerror = () => setSpeaking(null);
+    window.speechSynthesis.speak(utterance);
+    setSpeaking(post.id);
   };
 
   return (
