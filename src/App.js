@@ -199,19 +199,30 @@ function App() {
 
   const speakPost = (post) => {
     if (speaking === post.id) {
-      window.speechSynthesis.cancel();
       setSpeaking(null);
       return;
     }
     
-    window.speechSynthesis.cancel();
     const text = `${post.title}. ${post.content}`;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = i18n.language;
-    utterance.onend = () => setSpeaking(null);
-    utterance.onerror = () => setSpeaking(null);
-    window.speechSynthesis.speak(utterance);
-    setSpeaking(post.id);
+    const lang = i18n.language;
+    
+    // Split text into chunks if too long (Google TTS limit is ~200 chars)
+    const maxLength = 200;
+    if (text.length <= maxLength) {
+      const audio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(text)}`);
+      audio.onended = () => setSpeaking(null);
+      audio.onerror = () => setSpeaking(null);
+      audio.play();
+      setSpeaking(post.id);
+    } else {
+      // For longer text, use first chunk only
+      const chunk = text.substring(0, maxLength);
+      const audio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(chunk)}`);
+      audio.onended = () => setSpeaking(null);
+      audio.onerror = () => setSpeaking(null);
+      audio.play();
+      setSpeaking(post.id);
+    }
   };
 
   return (
