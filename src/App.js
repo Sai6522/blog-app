@@ -199,17 +199,35 @@ function App() {
 
   const speakPost = (post) => {
     if (speaking === post.id) {
+      window.speechSynthesis.cancel();
       setSpeaking(null);
       return;
     }
     
+    window.speechSynthesis.cancel();
     const text = `${post.title}. ${post.content}`;
     const lang = i18n.language;
+    
+    // Try Google TTS first
     const audio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(text)}`);
     
     audio.onended = () => setSpeaking(null);
-    audio.onerror = () => setSpeaking(null);
-    audio.play();
+    audio.onerror = () => {
+      // Fallback to browser speech synthesis
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.onend = () => setSpeaking(null);
+      window.speechSynthesis.speak(utterance);
+    };
+    
+    audio.play().catch(() => {
+      // If play fails, use browser speech synthesis
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.onend = () => setSpeaking(null);
+      window.speechSynthesis.speak(utterance);
+    });
+    
     setSpeaking(post.id);
   };
 
