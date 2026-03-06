@@ -206,23 +206,27 @@ function App() {
     const text = `${post.title}. ${post.content}`;
     const lang = i18n.language;
     
-    // Split text into chunks if too long (Google TTS limit is ~200 chars)
-    const maxLength = 200;
-    if (text.length <= maxLength) {
-      const audio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(text)}`);
-      audio.onended = () => setSpeaking(null);
-      audio.onerror = () => setSpeaking(null);
-      audio.play();
-      setSpeaking(post.id);
-    } else {
-      // For longer text, use first chunk only
-      const chunk = text.substring(0, maxLength);
-      const audio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(chunk)}`);
-      audio.onended = () => setSpeaking(null);
-      audio.onerror = () => setSpeaking(null);
-      audio.play();
-      setSpeaking(post.id);
-    }
+    // Use a different TTS service that works with CORS
+    const audio = new Audio(`https://api.voicerss.org/?key=undefined&hl=${lang}&src=${encodeURIComponent(text)}&c=MP3`);
+    
+    audio.onended = () => setSpeaking(null);
+    audio.onerror = () => {
+      // Fallback to browser speech if API fails
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.onend = () => setSpeaking(null);
+      window.speechSynthesis.speak(utterance);
+    };
+    
+    audio.play().catch(() => {
+      // If audio fails, use browser speech
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.onend = () => setSpeaking(null);
+      window.speechSynthesis.speak(utterance);
+    });
+    
+    setSpeaking(post.id);
   };
 
   return (
